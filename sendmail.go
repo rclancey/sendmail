@@ -35,7 +35,7 @@ func (c *SMTPClient) auth() smtp.Auth {
 	return smtp.PlainAuth("", *c.username, *c.password, c.host)
 }
 
-func (c *SMTPClient) Send(msg *EmailMessage) error {
+func (c *SMTPClient) Sendmail(msg *EmailMessage) error {
 	auth := c.auth()
 	from, err := ParseEmailAddress(msg.Header.Get("From"))
 	if err != nil {
@@ -48,4 +48,29 @@ func (c *SMTPClient) Send(msg *EmailMessage) error {
 	}
 	content := msg.Bytes()
 	return smtp.SendMail(c.hostAndPort(), auth, from.Address(), recips, content)
+}
+
+func (c *SMTPClient) Send(from, to, subject, textContent string, htmlContent *string) error {
+	fromAddr, err := ParseEmailAddress(from)
+	if err != nil {
+		return err
+	}
+	toAddr, err := ParseEmailAddress(to)
+	if err != nil {
+		return err
+	}
+	msg := NewEmailMessage(fomAddr)
+	msg.AddTo(toAddr)
+	msg.SetSubject(subject)
+	_, err = msg.WriteText(textContent)
+	if err != nil {
+		return err
+	}
+	if htmlContent != nil {
+		_, err = msg.WriteHTML(*htmlContent)
+		if err != nil {
+			return err
+		}
+	}
+	return c.Sendmail(msg)
 }
