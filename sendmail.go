@@ -59,7 +59,7 @@ func (c *SMTPClient) Send(from, to, subject, textContent string, htmlContent *st
 	if err != nil {
 		return err
 	}
-	msg := NewEmailMessage(fomAddr)
+	msg := NewEmailMessage(fromAddr)
 	msg.AddTo(toAddr)
 	msg.SetSubject(subject)
 	_, err = msg.WriteText(textContent)
